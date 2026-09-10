@@ -1,0 +1,22 @@
+Likewise
+Copyright 2026 Arun Kadambi
+
+Licensed under the Apache License, Version 2.0. See LICENSE.
+
+This product bundles no third-party source. It depends at runtime on five packages,
+all under permissive licences compatible with Apache-2.0 and each installed from its
+own distribution rather than vendored here:
+
+  duckdb            MIT
+  fastapi           MIT
+  uvicorn           BSD-3-Clause
+  PyYAML            MIT
+  python-multipart  Apache-2.0
+
+The optional extraction stage in extract/ additionally depends on torch, transformers,
+tokenizers and safetensors, none of which are installed by default and none of which
+the served engine imports.
+
+The data in data/raw/ is a public extract retrieved from the FFIEC HMDA Data Browser.
+Home Mortgage Disclosure Act data is published by the United States government and is
+not subject to copyright.

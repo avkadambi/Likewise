@@ -1,0 +1,171 @@
+/* Likewise web view. Layered over the Industry design system: this file changes only
+   the line-drawing treatment (cards are transparent line drawings, not filled surfaces)
+   and adds the responsive rules. No token is redefined. */
+
+body { margin: 0; background: var(--color-bg); font-family: var(--font-body); }
+* { box-sizing: border-box; }
+a { color: var(--color-accent-700); }
+a:hover { color: var(--color-accent-900); }
+:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
+
+.mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
+.muted { color: var(--color-neutral-700); }
+.dim   { color: var(--color-neutral-600); }
+
+/* Cards are line drawings, per the design system's own direction. */
+.card {
+  display: block; background: transparent; border: 1px solid var(--color-divider);
+  border-radius: 0; padding: 18px 20px;
+}
+.card.tight { padding: 14px 16px; }
+.blueprint { position: relative; }
+
+.wrap { max-width: 1440px; margin: 0 auto; padding: 0 24px 48px; }
+
+/* — header — */
+.top {
+  display: flex; align-items: center; gap: 18px; height: 60px; padding: 0 24px;
+  border-bottom: 1px solid var(--color-divider); flex-wrap: wrap;
+}
+.brand { font: 600 19px/1 var(--font-heading); letter-spacing: .09em; text-decoration: none;
+         color: var(--color-text); }
+.nav-links { display: flex; gap: 20px; font: 13.5px/1 var(--font-body); }
+.nav-links a { color: var(--color-neutral-700); text-decoration: none; padding-bottom: 5px; }
+.nav-links a.on { color: var(--color-text); border-bottom: 2px solid var(--color-accent); }
+.spacer { flex: 1; }
+.crumb { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; color: var(--color-neutral-700); }
+
+/* — banners — */
+.banner {
+  border: 1px solid var(--color-neutral-800); border-left-width: 4px;
+  padding: 12px 16px; margin: 18px 0; font: 13px/1.55 var(--font-body);
+}
+.banner.info { border-color: var(--color-accent-600); background: var(--color-accent-100); }
+.banner b { font-weight: 700; }
+
+/* — layout — */
+.two { display: grid; grid-template-columns: 1fr 372px; gap: 30px; align-items: start; }
+.stack { display: grid; gap: 16px; align-content: start; }
+h1.page { font: 600 30px/1.1 var(--font-heading); margin: 22px 0 8px; }
+h2.sec  { font: 600 16px/1 var(--font-heading); letter-spacing: .03em; margin: 0 0 8px; }
+.lede { font: 14px/1.6 var(--font-body); margin: 0 0 14px; max-width: 74ch; }
+
+/* — meters — */
+.meter { height: 8px; background: var(--color-neutral-300); }
+.meter > i { display: block; height: 100%; background: var(--color-accent); }
+
+/* — finding rows — */
+.frow { margin-bottom: 12px; }
+.frow .grid { display: grid; grid-template-columns: 1fr 250px; gap: 26px; align-items: start; }
+.frow h3 { font: 600 21px/1.25 var(--font-heading); margin: 0 0 10px; max-width: 60ch; }
+.rail { border-left: 1px solid var(--color-divider); padding-left: 22px; }
+.pair {
+  display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--color-divider);
+  max-width: 560px; margin-bottom: 11px;
+}
+.pair > div { padding: 10px 13px; }
+.pair > div:first-child { border-right: 1px solid var(--color-divider); }
+.pair > div:last-child { background: var(--color-accent-100); }
+.kicker { font: 600 9.5px/1 ui-monospace, Menlo, monospace; letter-spacing: .06em;
+          color: var(--color-neutral-600); margin-bottom: 4px; }
+
+/* — delta table — */
+.deltas { display: grid; grid-template-columns: 1.05fr 1fr 1fr; }
+.drow { display: contents; }
+.drow > div { padding: 12px 16px; border-top: 1px solid var(--color-divider); }
+.drow > div:nth-child(1) { border-right: 1px solid var(--color-divider); padding-left: 20px; }
+.drow > div:nth-child(2) { border-right: 1px solid var(--color-divider); }
+.drow.named > div { background: var(--color-accent-100); }
+.drow.hd > div { border-top: 0; }
+.celllabel { display: none; }
+.num { font: 600 17px/1.2 var(--font-heading); display: block; }
+
+/* — chains and tables — */
+.chain { display: grid; gap: 8px; }
+.chain .r, .chain .h {
+  display: grid; grid-template-columns: 230px 1fr 110px 88px; gap: 14px; align-items: center;
+}
+.chain .h { padding-bottom: 6px; border-bottom: 1px solid var(--color-divider); }
+.bar { height: 18px; background: var(--color-neutral-300); }
+.bar > i { display: block; height: 100%; background: var(--color-accent-600); }
+
+table.data { width: 100%; border-collapse: collapse; font: 12.5px/1.4 var(--font-body); }
+table.data th {
+  text-align: left; font: 600 9.5px/1 ui-monospace, Menlo, monospace; letter-spacing: .06em;
+  color: var(--color-neutral-600); padding: 0 10px 7px 0; border-bottom: 1px solid var(--color-divider);
+}
+table.data td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--color-neutral-200); }
+table.data tr.on td { background: var(--color-accent-100); font-weight: 600; }
+table.data tr.off td { color: var(--color-neutral-600); }
+.scroll-x { overflow-x: auto; }
+
+pre.err {
+  margin: 0; font: 11px/1.6 ui-monospace, Menlo, monospace; background: var(--color-neutral-200);
+  padding: 11px 13px; overflow-x: auto; white-space: pre;
+}
+
+/* — disposition — */
+.opts { display: grid; gap: 8px; margin-bottom: 13px; }
+.opts label {
+  display: flex; gap: 10px; align-items: flex-start; padding: 9px 11px;
+  border: 1px solid var(--color-divider); min-height: 44px; font: 13px/1.4 var(--font-body);
+  cursor: pointer;
+}
+.opts label:hover { border-color: var(--color-accent); }
+.opts label:has(input:checked) { border-color: var(--color-accent); background: var(--color-accent-100); }
+.btn { min-height: 40px; }
+.btn.block { width: 100%; }
+
+/* — sweep chart — */
+svg.chart { width: 100%; height: auto; display: block; }
+
+/* ————— 2e responsive rules ————— */
+/* 840–1279: single column, in reading order — the rail unstacks after the evidence. */
+@media (max-width: 1279px) {
+  .two { grid-template-columns: 1fr; }
+  .frow .grid { grid-template-columns: 1fr; }
+  .rail { border-left: 0; border-top: 1px solid var(--color-divider); padding: 14px 0 0; }
+  .chain .r, .chain .h { grid-template-columns: 180px 1fr 90px 72px; }
+}
+/* < 840: transposed. Delta table becomes one card per dimension; sticky action bar. */
+@media (max-width: 839px) {
+  body { font-size: 16px; }
+  .wrap { padding: 0 16px 96px; }
+  .top { height: auto; padding: 10px 16px; gap: 10px; }
+  .nav-links { width: 100%; overflow-x: auto; gap: 14px; }
+  h1.page { font-size: 24px; }
+  .pair { grid-template-columns: 1fr; max-width: none; }
+  .pair > div:first-child { border-right: 0; border-bottom: 1px solid var(--color-divider); }
+  /* transposed: one card per dimension, denied above approved */
+  .deltas { display: block; }
+  .drow { display: block; border-top: 1px solid var(--color-divider); padding: 4px 0; }
+  .drow.hd { display: none; }
+  .drow > div { border: 0 !important; padding: 6px 16px !important; }
+  .drow.named > div:first-child { padding-bottom: 0 !important; }
+  .celllabel {
+    display: inline-block; min-width: 78px; font: 600 10px/1.6 ui-monospace, Menlo, monospace;
+    letter-spacing: .06em; color: var(--color-neutral-600); text-transform: uppercase;
+    vertical-align: baseline;
+  }
+  .drow > div:nth-child(2) .num, .drow > div:nth-child(3) .num { display: inline-block; }
+  .chain .r, .chain .h { grid-template-columns: 1fr 70px 60px; }
+  .chain .bar, .chain .h span:nth-child(2) { display: none; }
+  .stick {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    display: flex; gap: 9px; padding: 11px 16px;
+    background: var(--color-neutral-100); border-top: 1px solid var(--color-divider);
+  }
+  .stick .btn { min-height: 48px; flex: 1; }
+  .desktop-only { display: none; }
+  .num, table.data { font-size: 15px; }
+  a, .btn, .opts label, summary { min-height: 44px; }
+}
+@media (min-width: 840px) { .stick { display: none; } }
+
+details > summary {
+  cursor: pointer; font: 11.5px/1.6 ui-monospace, Menlo, monospace;
+  color: var(--color-accent-700); padding: 6px 0; list-style: none;
+}
+details > summary::-webkit-details-marker { display: none; }
+details > summary::before { content: "+ "; }
+details[open] > summary::before { content: "– "; }

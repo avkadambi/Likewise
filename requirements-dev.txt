@@ -1,0 +1,4 @@
+-r requirements.txt
+pytest==9.1.1             # the test suite
+httpx==0.28.1             # required by fastapi.testclient, not by the app
+ruff==0.14.6              # lint gate; not imported by anything at runtime

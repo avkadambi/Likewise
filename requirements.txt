@@ -1,0 +1,7 @@
+# Runtime. Four direct dependencies, all pure-wheel on macOS arm64 and x86_64 --
+# nothing here needs a compiler, a database server, or a cloud account.
+duckdb==1.5.5             # the engine: embedded OLAP over Parquet, no server
+fastapi==0.141.1          # /v1 routes and the /ui renderer
+uvicorn==0.46.0           # ASGI server
+PyYAML==6.0.3             # specifications are YAML; nothing else parses them
+python-multipart==0.0.26  # the web view's disposition form posts multipart/form-data

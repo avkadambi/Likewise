@@ -1,0 +1,13 @@
+# The ANALYSIS stack. Deliberately separate from requirements.txt, which is the five
+# packages the served container carries.
+#
+# The separation is not a compromise between "use libraries" and "do not". It is the
+# design: the engine implements each statistic from first principles so that the served
+# image stays small and auditable, and this layer implements the SAME statistics a second
+# time against mature reference libraries and asserts the two agree. Two independent
+# implementations of one estimator is a stronger correctness argument than either alone.
+numpy>=2.0
+scipy>=1.14
+pandas>=2.2
+statsmodels>=0.14
+matplotlib>=3.8

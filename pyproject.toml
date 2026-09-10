@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "likewise"
+version = "0.14.0"
+description = "Reads a lender's published HMDA filing and identifies denials the public record does not support on the reason cited"
+readme = "README.md"
+requires-python = ">=3.10"
+
+# Kept in lockstep with requirements.txt, which stays the source of truth for the
+# container build. Both are fully pinned; a separate lockfile would be a third place to
+# forget, for a dependency set of five.
+dependencies = [
+    "duckdb==1.5.5",
+    "fastapi==0.141.1",
+    "uvicorn==0.46.0",
+    "PyYAML==6.0.3",
+    "python-multipart==0.0.26",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1", "httpx==0.28.1", "ruff==0.14.6"]
+# Extraction is optional and heavy: torch is 555 MB against DuckDB's 21.5. It is NOT in
+# `dependencies`, and extract/requirements.txt stays the source of truth for it.
+extract = ["torch>=2.4", "transformers>=4.48", "tokenizers>=0.21", "safetensors>=0.4"]
+
+[tool.setuptools]
+packages = ["likewise", "likewise.web", "extract"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+likewise = ["static/*.css"]
+
+# ---------------------------------------------------------------------------- ruff --
+# The rule set is chosen to find DEFECTS, not to impose a house style. A gate that fires
+# on 200 sites of deliberate formatting is a gate somebody switches off, and then the
+# real findings go with it. Every rule below has caught, or would have caught, something
+# that mattered: an undefined name, an unused spec key that had quietly become dead
+# configuration, a zip() that would truncate a candidate row without saying so.
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["data", ".venv"]
+
+[tool.ruff.lint]
+select = [
+    "F",     # pyflakes: undefined names, unused imports and variables
+    "B",     # bugbear: mutable defaults, raise-without-from, zip-without-strict
+    "RUF",   # ruff's own correctness rules
+    "E9",    # syntax and IO errors
+    "W6",    # deprecated and invalid escapes
+]
+ignore = [
+    # FastAPI's dependency injection IS a call in an argument default. There is no other
+    # way to declare it, and the framework evaluates it per request, not once at import.
+    "B008",
+    # Ambiguous-unicode: the interface deliberately uses en dashes and middots.
+    "RUF001", "RUF002", "RUF003",
+    # list + list vs unpacking is a taste question, not a defect class.
+    "RUF005",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# The mutation catalogue is a data file of source fragments: it is meant to contain
+# code-shaped strings that do not parse in context.
+"tests/mutants.py" = ["E501", "F"]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: builds and loads a multi-megabyte file; excluded from the mutation run, where the per-mutant cost would dominate. Nothing in the catalogue depends on it.",
+]

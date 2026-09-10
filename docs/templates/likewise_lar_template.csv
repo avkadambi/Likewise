@@ -1,0 +1,4 @@
+lei,activity_year,action_taken,denial_reason_1,denial_reason_2,denial_reason_3,denial_reason_4,loan_purpose,occupancy_type,lien_status,loan_type,county_code,aus_1,construction_method,total_units,submission_of_application,initially_payable_to_institution,conforming_loan_limit,amortization,interest_only_payment,balloon_payment,negative_amortization,has_co_applicant,loan_amount,income,property_value,combined_loan_to_value_ratio,debt_to_income_ratio,open_end_line_of_credit,reverse_mortgage,business_or_commercial_purpose
+549300EXAMPLE000001,2024,3,4,,,,1,1,1,1,06073,1,1,1,1,1,C,2,2,2,2,0,485000,142000,605000,80.165,41,2,2,2
+549300EXAMPLE000001,2024,1,,,,,1,1,1,1,06073,1,1,1,1,1,C,2,2,2,2,0,485000,141000,575000,84.348,41,2,2,2
+549300EXAMPLE000001,2024,3,3,,,,1,1,1,1,06073,1,1,1,1,1,C,2,2,2,2,0,325000,96000,405000,80.247,,2,2,2
