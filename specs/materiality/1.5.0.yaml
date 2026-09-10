@@ -1,0 +1,278 @@
+# Likewise materiality specification.
+# See docs/TECHNICAL_DESIGN.md. This file is the comparability standard: signed, versioned, immutable
+# once published, cited by digest on every finding. It is NOT fitted and NOT tuned.
+version: "1.5.0"
+effective_date: "2026-09-10"
+author: "Arun Kadambi"
+bin_snapshot: "ffiec_flg_2025_2026-09-15"
+budget: "1.1.0"
+
+# v1.5.0 rationale. NO MATCHING RULE CHANGED. Every block below is byte-identical to
+# 1.4.0; the only edits are this header's version, date and pinned publication snapshot,
+# and the supersedes line.
+#
+# The reason a new version exists at all is that the file being scanned changed filing
+# year. The resolution budget is a claim about how the REGULATOR coarsened a particular
+# publication, so a specification pinned to the 2024 snapshot does not describe a 2025
+# file even when the two snapshots happen to carry identical granularity values -- and
+# they do, which is exactly why this must be a version bump rather than an assumption.
+# Comparing a 2025 result against a 2024-pinned standard would be comparing two things
+# whose provenance nobody could reconstruct afterwards.
+#
+# A reader checking this against 1.4.0 should find a five-line diff and nothing else.
+
+# v1.1.0 rationale (a version without a written rationale should be impossible to
+# publish). No matching rule changed. The specification is re-pointed at the 2024
+# publication snapshot because the retrieved file is a 2024 filing, and every granularity
+# claim in that snapshot is now checked against the file itself rather than asserted from
+# a document nobody has read. The comparability standard is unchanged, so findings under
+# 1.0.0 and 1.1.0 are not comparable only because the underlying filing year differs.
+supersedes: "1.4.0"
+
+# v1.2.0 rationale. initially_payable_to_institution is removed from the blocking
+# key and from exact_match_required. On the 2024 file it takes the value 3 ("not
+# applicable") on every denial and 1 or 2 on every origination, because the field
+# describes who a loan is payable to and a denied application has no loan. It is
+# determined by the outcome, not by the application. Blocking on it is provably empty:
+# a v1.1.0 scan of this filer refused at the post-treatment guard with zero possible
+# comparators. The field entered the key through the architect review's six added
+# exact-match fields, where it looked like an underwriting characteristic. The synthetic
+# fixture hid the defect by assigning every record the same value.
+
+# v1.4.0 rationale. No tolerance, band or key membership changes; every finding under
+# 1.3.0 is a finding under 1.4.0. What changes is that three things the design has always
+# asserted are now declared here and enforced at the gate, and one signature is real.
+#
+#   1. Two invariants become validation rules. A tested dimension may not appear in the
+#      blocking key, the exact-match set or the bands (rule 8): matching a dimension and
+#      then testing it are contradictory, and dominance is what replaces the tolerance on
+#      the tested dimension. A residual-risk band must be strictly wider than its own
+#      tolerance (rule 9): banded at exactly the tolerance, blocking removes every pair
+#      the residual clause could fire on, and the clause is live in the code and dead in
+#      effect. Both held in 1.3.0 by inspection. Neither was checked, which is the same
+#      shape as every defect the gate exists to catch.
+#
+#   2. The multi-code policy and the treatment of incomparability move out of the engine
+#      and into `comparison:` below. Both change the CLAIM rather than the count, so both
+#      belong in a versioned artifact with a rationale rather than in a function.
+#
+#   3. `author` is a name. Earlier versions said "unsigned" while this document and the
+#      README both promised a named author. A governance artifact that claims a signature
+#      it does not carry is worse than one that admits it has none.
+#
+# The resolution model is named rather than implied (`resolution_model` in the budget),
+# defaulting to the same strictest-floor composition every dimension already used, so no
+# threshold moves.
+
+# v1.3.0 rationale. Four changes, all measured against the full national file rather
+# than one filer.
+#
+# Four exact-match fields are removed -- amortization, interest_only_payment,
+# balloon_payment, negative_amortization. Leave-one-out over 563,148 testable denials
+# shows they cost nothing measurable in comparability (0.0 to 0.4 percentage points of
+# matching each) while lengthening the key. Their rare non-default values also mark
+# loans whose terms changed during processing to save a deal, which is downstream of the
+# application.
+#
+# Income and loan amount move from the control set to residual risk, with directions,
+# and the blocking bands widen to compensate. A two-sided membership rule admits a
+# comparator only if it is within tolerance in BOTH directions, but the purpose of the
+# control set is to stop a comparator being BETTER on something the reason did not name.
+# A comparator with lower income or a larger loan is worse, and admitting it only makes
+# the denial harder to justify. Clause 4 already expresses exactly that -- "not strictly
+# better beyond tolerance" -- so the asymmetry belongs there, as a condition on the
+# finding, rather than in the cell, where it would destroy exchangeability.
+#
+# Loan amount is deliberately NOT given a direction for reason code 4. Combined
+# loan-to-value is 100*L/V, so a comparator admitted for carrying a larger loan at the
+# same property value produces a collateral finding by division rather than by
+# underwriting.
+#
+# The blocking bands widen from 10% to 22% because the coverage cost is otherwise
+# severe: at the previous operating point only 20.8% of testable denials nationally had
+# any comparator, and 2.5% sat in a cell that could reach the significance threshold.
+
+# --- population  -------------------------------------------------
+population:
+  approved_actions: [1, 2]        # 2 = approved but not accepted; still a lender approval
+  denied_actions: [3]
+  excluded_actions: [4, 5, 6, 7, 8]
+  context_actions: [4, 5]         # withdrawn / file closed -- reported, not scored
+  exclude_flags:
+    open_end_line_of_credit: 1
+    reverse_mortgage: 1
+    business_or_commercial_purpose: 1
+  max_total_units: 4
+
+# --- blocking  --------------------------------------------
+blocking:
+  key:
+    - lei
+    - activity_year
+    - loan_purpose
+    - occupancy_type
+    - lien_status
+    - loan_type
+    - county_code
+    - aus_1
+    - construction_method
+    - total_units
+    - submission_of_application
+    - conforming_loan_limit
+    - has_co_applicant
+  band:
+    loan_amount: {relative: 0.22, min_absolute: 20000}
+    income:      {relative: 0.22, min_absolute: 5000}
+  max_block_rows: 5000
+  subblock_on: loan_amount
+
+# Everything in the blocking key must also be an exact-match field.
+exact_match_required:
+  - activity_year
+  - loan_purpose
+  - occupancy_type
+  - lien_status
+  - loan_type
+  - county_code
+  - aus_1
+  - construction_method
+  - total_units
+  - submission_of_application
+  - conforming_loan_limit
+  - has_co_applicant
+
+# --- control set C : matched within tolerance --------------------
+control_features: {}
+# Empty by design. Income and loan amount used to sit here as two-sided membership
+# conditions; they are now residual-risk dimensions with directions, which is a
+# condition on the FINDING rather than on the cell. Comparability is carried by the
+# blocking bands, which are symmetric and therefore keep the cell exchangeable.
+
+# --- residual risk set R  -------------------------------
+# Published risk dimensions in neither T nor C. Clause 4: the approved comparator must not be
+# strictly better than the denied file beyond tolerance on any of these. Catches a collateral
+# finding where the approved file has worse LTV but far better DTI.
+residual_risk:
+  income:
+    tolerance: 0.10
+    unit: relative
+    reference: min
+    min_absolute: 5000
+    direction: higher_is_better
+    rationale: "A comparator with MORE income than the denied file, beyond tolerance, is
+                better on capacity and cannot support the finding. One with less is worse,
+                and is admitted: it only makes the denial harder to justify."
+  loan_amount:
+    tolerance: 0.10
+    unit: relative
+    reference: min
+    min_absolute: 20000
+    direction: higher_is_worse
+    applies_when: {excluded_for_reason_codes: [4]}
+    rationale: "A comparator borrowing MORE at the same income is worse, and is admitted.
+                Excluded for code 4: combined loan-to-value is 100*L/V, so treating loan
+                amount directionally there would produce a collateral finding by division."
+  debt_to_income_ratio:
+    tolerance: 3.0
+    unit: percentage_points
+    direction: higher_is_worse
+    # DTI is published as integers only in 36-49 and in >=10pp buckets outside it. A single
+    # global tolerance would enforce a materiality standard that varies by an order of
+    # magnitude across the population. Restrict the dimension to the region where the
+    # published resolution can carry it; elsewhere it is below_resolution for that pair.
+    applies_when: {field: debt_to_income_ratio, integer_range: true}
+    rationale: "One DTI bucket plus margin, applied only in the 36-49 integer region where
+                DTI is published at 1pp. Prevents a code-4 finding where the comparator is
+                materially stronger on capacity."
+
+# --- suspected resubmission  -------------------------------------
+# No action date exists in the Modified LAR, so this is a signature, not a time window.
+# Matching pairs are ROUTED to their own denominator, not silently dropped.
+suspected_resubmission:
+  signature:
+    - lei
+    - county_code
+    - loan_purpose
+    - occupancy_type
+    - lien_status
+    - property_value_bin
+    - income_bin
+  property_value_bin_width: 10000
+  income_bin_width: 10000
+
+# --- disclosure  ---------------------------------------
+disclosure:
+  k_min: 5
+  geography_ceiling: county
+  # The k-anonymity cohort is defined over the attributes an adversary would use to
+  # RE-IDENTIFY a borrower against the public file -- coarse geography plus banded
+  # financials -- not over the full internal blocking key. Including underwriting
+  # fields such as aus_1, amortization or balloon_payment shrinks the cohort without
+  # adding any disclosure protection: they are not what identifies a person.
+  # Measured on the dev slice: cohort on the full 18-field key + bands gives a median
+  # of 1 and zero cohorts at k>=5; cohort on the key below gives a workable
+  # distribution. See tools/diagnose_cohort.py.
+  cohort_key: [lei, activity_year, county_code, loan_purpose, occupancy_type, lien_status]
+  bands:
+    income: 10000
+    property_value: 25000
+    combined_loan_to_value_ratio: 5
+    loan_amount: 25000
+
+# --- statistics  -------------------------------------------
+# --- comparison policy -----------------------------------------------
+# How the dominance clauses read the comparison lattice. Declared here rather than
+# implied by the engine, because both settings change the CLAIM and not only the count.
+comparison:
+  # conservative: a denial citing ANY untestable code is untestable as a whole.
+  #
+  # This is not an artefact of the implementation and it is not free conservatism. HMDA
+  # denial reasons are first-sufficient, unranked and non-exhaustive, so "the public
+  # record does not support the reason you cited" is only defensible when every cited
+  # reason was examined. The alternative, `any_testable`, weakens the claim to "does not
+  # support at least one of the reasons you cited" -- which is gameable in the opposite
+  # direction from the known problem, and would raise the finding rate for reasons that
+  # have nothing to do with the lender's conduct.
+  #
+  # Changing this changes the estimand. It is a specification decision with a version
+  # and a rationale, not a tuning knob.
+  multi_code_policy: conservative
+
+  # Incomparability is reported, never absorbed. Two published values whose intervals
+  # overlap do not disagree quietly: the public record does not order them, and about
+  # 81.5% of debt-to-income denials are structurally in that position at any sample size.
+  # Folding that into "no finding" would report a silence as an absence of a problem.
+  report_incomparable: true
+
+statistics:
+  cell_power_min: 10        # below this a cell cannot reach q; see the method document, cells and power
+  fdr_q: 0.10
+  permutation_B: 2000
+  permutation_B_initial: 200
+  permutation_B_max: 5000
+
+# --- tripwires  --------------------------------------------
+# Two-sided. A rate BELOW the lower bound triggers the same investigation as one above.
+tripwires:
+  not_supported_rate: {low: 0.01, high: 0.40}
+  matched_fraction:   {low: 0.02, high: 0.60}
+  median_margin_ratio: {low: 2.0}
+  cited_over_placebo:  {low: 2.0}
+
+  # The pooled scan-level statistic -- the only inferential claim the product makes.
+  # Until 1.4.0 no gate read it.
+  #
+  # Banded on ONE side only, and the asymmetry is deliberate. A positive z is the claim
+  # this product exists to raise: the denials sit better than chance on the dimension
+  # their own stated reason names. Nothing should reach a customer carrying it without a
+  # human having re-derived it first, so 3.0 is a review trigger, not a significance
+  # threshold.
+  #
+  # The negative side is left unbanded on purpose. A large negative z is the stated
+  # reason holding up, which is the expected result rather than a surprise. And |z|
+  # scales with the square root of the cell count, so any lower bound would have to be
+  # read off whatever scan happened to be in front of us -- the "threshold chosen to
+  # produce the result" problem the sweep exists to expose. A polarity inversion, the
+  # failure a lower bound would be reaching for, arrives as a large POSITIVE z and is
+  # already caught above.
+  scan_level_z:        {high: 3.0}

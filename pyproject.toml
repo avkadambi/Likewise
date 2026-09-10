@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "likewise"
-version = "0.14.0"
+version = "0.15.0"
 description = "Reads a lender's published HMDA filing and identifies denials the public record does not support on the reason cited"
 readme = "README.md"
 requires-python = ">=3.10"

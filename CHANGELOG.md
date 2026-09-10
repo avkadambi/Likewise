@@ -1,5 +1,78 @@
 # Changelog
 
+## 0.15.0 — 10 September 2026
+
+The engine read the FFIEC Snapshot National Loan Level Dataset for the first time, and
+reading it required a third accepted CSV layout and a detector that cannot guess. Then it
+ran over the whole 2025 file: 13,543,606 records, 4,782 filers, 2,883 filer-year scans.
+
+### The detector had a hole, and it failed in the most dangerous direction available
+
+Layout detection keyed on a single marker column. The Snapshot names its ratio
+`combined_loan_to_value_ratio`, which was the TEMPLATE marker, while publishing income in
+thousands, as the Data Browser does — and the template path does not scale income. A
+Snapshot file therefore matched the template branch and **every income would have come out
+a thousand times too small**: the blocking band on income would have matched almost
+everything, and nothing about the load would have looked wrong. It failed safe only because
+the Snapshot lacks the derived `amortization` and `has_co_applicant` columns that the
+required-column check demands. That is luck, not a detector.
+
+`detect_layout` now scores a header against each layout's FULL required column set. A
+layout is claimed only when every column it needs is present; two complete matches refuse
+as `ambiguous_csv_layout` rather than being resolved by declaration order, because the
+layouts disagree on the unit of `income` and guessing is a thousand-fold error either way.
+A header that is unambiguously a template with something missing still gets the specific
+`template_missing_required_columns` refusal naming the missing columns — that chooses a
+message, never a reading.
+
+### The Snapshot layout
+
+`SNAPSHOT_MAP` is a separate map rather than a punctuation-normalising pass over the
+header. The two products are not the same file: the Snapshot carries census tract and the
+full demographic block, which the Modified LAR omits, and a rule that rewrote punctuation
+would make them look interchangeable when only one is safe to publish geography from.
+
+New tests: the Snapshot header is not read as a template; a partial header is refused
+rather than guessed; a header satisfying two layouts is refused as ambiguous; and a record
+filed once and published in both products converts to the same internal record. 253 tests,
+mutation 80/80.
+
+### materiality 1.5.0
+
+Identical to 1.4.0 except for the pinned publication snapshot, which moves from the 2024
+file to the 2025 one. No matching rule changed — a reader checking the diff should find the
+version, the date, the snapshot, the supersedes line and a rationale block, and nothing
+else. The resolution budget is a claim about how the regulator coarsened a PARTICULAR
+publication, so a specification pinned to 2024 does not describe a 2025 file even when the
+two snapshots carry identical granularity values.
+
+### What the national run found
+
+- **372 findings from 2,013,872 denials**, over 8,853,455 records in scope.
+- Denials sit **worse** than chance on the dimension their own stated reason names: median
+  filer-level pooled z = −1.18, 81% of filers negative, and 3 filers of 1,284 above their
+  own permutation null. Combining the 1,270 filer-level tests by Fisher's method gives
+  χ² = 2,325 on 2,540 degrees of freedom, below its null mean.
+- **1,567 of 2,837 scanned filers (55%) contribute no testable cell at all.** Findings by
+  filing size: none below 1,000 records, 6 between 1,000 and 10,000, 366 above.
+- k-anonymity suppressed 13,687 findings — thirty-seven times the number that survived.
+  Disclosure control, not statistics, removes most of what the engine finds.
+
+### One defect the run found that no test could have
+
+Four filings, roughly 190,000 records, were refused at load for
+`data_is_not_at_publication_granularity`. The cause is six records in the entire national
+file whose `property_value` is exactly 2,147,483,647 — the largest signed 32-bit integer,
+an overflow artefact in the published file rather than un-coarsened data. It is not among
+the documented HMDA numeric sentinels (1111, 8888, 9999, −1), so it survives normalisation
+as a number and then fails the granularity check.
+
+The rule is right and the diagnosis is wrong. The fix is to add `2147483647` to the numeric
+sentinels on the evidence of those six records, which is a schema claim about the
+regulator's publication and belongs in the specification rather than in a code patch. It is
+NOT applied in this release: the run was made under the specification as written, and
+changing the schema mid-run would have made the results a mixture of two standards.
+
 ## 0.14.0 — 10 September 2026
 
 The statistics are now implemented twice, and the design's operating characteristics are

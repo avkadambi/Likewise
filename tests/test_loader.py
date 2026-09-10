@@ -80,12 +80,97 @@ def test_the_shipped_example_filing_loads(snap, tmp_path):
 
 
 # --- layout detection and equivalence -------------------------------------
+def _header_for(layout):
+    """A minimal header that satisfies `layout` completely, derived from the loader's own
+    requirement set rather than transcribed -- so a new required column cannot leave this
+    fixture quietly stale."""
+    return sorted(loader.required_sources(layout))
+
+
 def test_layouts_are_detected_from_the_header_not_the_filename():
-    assert loader.detect_layout(["lei", "loan_to_value_ratio", "denial_reason-1"]) == "ffiec"
+    for layout in ("ffiec", "snapshot", "template"):
+        assert loader.detect_layout(_header_for(layout)) == layout
     assert loader.detect_layout(loader.TEMPLATE_COLUMNS) == "template"
     with pytest.raises(SpecError) as ei:
         loader.detect_layout(["a", "b", "c"])
     assert ei.value.kind == "unrecognised_csv_layout"
+
+
+def test_a_partial_header_is_refused_rather_than_guessed():
+    """Detection scores the FULL required set. A header carrying only a marker column is
+    a file the loader cannot read, and saying so beats reading three columns of it."""
+    with pytest.raises(SpecError) as ei:
+        loader.detect_layout(["lei", "loan_to_value_ratio", "denial_reason-1"])
+    assert ei.value.kind == "unrecognised_csv_layout"
+    # The refusal names how close each layout came, so the operator can see what is missing
+    # instead of being told only that it did not work.
+    layouts = ei.value.failures[0]["layouts"]
+    assert set(layouts) == {"ffiec", "snapshot", "template"}
+    assert layouts["ffiec"]["fraction_present"] > layouts["template"]["fraction_present"]
+
+
+def test_the_snapshot_layout_is_not_read_as_a_template():
+    """The regression this detector exists for.
+
+    The Snapshot National Loan Level Dataset names its ratio `combined_loan_to_value_ratio`
+    -- which used to be the template marker -- while publishing income in THOUSANDS, as the
+    Data Browser does. Under marker detection a Snapshot file matched the template branch,
+    the template branch does not scale income, and every income would have come out a
+    thousand times too small with nothing about the load looking wrong."""
+    header = _header_for("snapshot")
+    assert "combined_loan_to_value_ratio" in header
+    assert loader.detect_layout(header) == "snapshot"
+
+    row = dict.fromkeys(header, "")
+    row.update({"lei": "L", "activity_year": "2025", "income": "142",
+                "co_applicant_credit_score_type": "10"})
+    rec = loader.convert(row, "snapshot", {})
+    assert rec["income"] == 142000.0, "income must be scaled from thousands"
+    assert rec["has_co_applicant"] == 0, "credit score type 10 means no co-applicant"
+
+
+def test_a_header_satisfying_two_layouts_is_refused_as_ambiguous():
+    """Two complete matches are not a tie to break by declaration order. The layouts
+    disagree on the unit of `income`, so guessing is a thousand-fold error either way."""
+    with pytest.raises(SpecError) as ei:
+        loader.detect_layout(_header_for("ffiec") + _header_for("snapshot")
+                             + _header_for("template"))
+    assert ei.value.kind == "ambiguous_csv_layout"
+    assert len(ei.value.failures[0]["layouts_matched"]) > 1
+
+
+def test_the_two_regulator_layouts_convert_a_record_identically():
+    """Same regulator, same semantics, different punctuation. A record filed once and
+    published in both products must arrive at the same internal record, or a filer's
+    results would depend on which download the operator happened to use."""
+    values = {"lei": "L", "activity_year": "2025", "income": "142",
+              "loan_amount": "305000", "property_value": "315000",
+              "debt_to_income_ratio": "44", "action_taken": "3",
+              "county_code": "06073", "denial_reason_1": "1", "aus_1": "1",
+              "combined_loan_to_value_ratio": "96.5",
+              "co_applicant_credit_score_type": "10",
+              "open_end_line_of_credit": "2"}
+    # the same values, spelled the way each product spells them
+    snap_row = dict.fromkeys(_header_for("snapshot"), "")
+    snap_row.update(values)
+    ffiec_row = dict.fromkeys(_header_for("ffiec"), "")
+    ffiec_row.update({k: v for k, v in values.items()
+                      if k not in ("denial_reason_1", "aus_1",
+                                   "combined_loan_to_value_ratio",
+                                   "co_applicant_credit_score_type",
+                                   "open_end_line_of_credit")})
+    ffiec_row.update({"denial_reason-1": "1", "aus-1": "1",
+                      "loan_to_value_ratio": "96.5",
+                      "co-applicant_credit_score_type": "10",
+                      "open-end_line_of_credit": "2"})
+    a = loader.convert(snap_row, "snapshot", {})
+    b = loader.convert(ffiec_row, "ffiec", {})
+    # record_key is a digest of the SOURCE row, so it differs by construction: the two
+    # products publish different columns. Everything the engine reasons about must agree.
+    for field in COLUMNS:
+        if field == "record_key":
+            continue
+        assert a[field] == b[field], field
 
 
 def test_income_crosses_the_two_layouts_intact():

@@ -14,7 +14,7 @@ nothing ever asked the pipeline what it does when there is nothing to find:
   * cells that could not reach the threshold at any effect size were counted as
     findings.
 
-A test suite that only ever asks "does it find the thing we planted" cannot catch any
+A test suite that only ever asks "does it find the planted thing" cannot catch any
 of those. This one asks the opposite question.
 """
 import random
