@@ -1,0 +1,22 @@
+{
+  "source": "FFIEC HMDA Data Browser, loan-level CSV extract",
+  "source_endpoint": "https://ffiec.cfpb.gov/v2/data-browser-api/view/csv",
+  "filer_name_public": "Fairway Independent Mortgage Corporation",
+  "filer_lei_public": "549300MGPZBLQDIL7538",
+  "geography": "county 06073 (San Diego County, California)",
+  "filing_year": 2024,
+  "retrieved": "2026-09-07",
+  "verified": true,
+  "verification_method": "Each partition's row count and loan_amount sum were checked against the FFIEC aggregations endpoint for the same filter set, and every row was required to carry exactly 99 fields. No partition that failed a check contributed a row.",
+  "completeness": {
+    "universe_rows": 440,
+    "universe_note": "All action_taken 1 and 3 records for this filer-county-year, per the aggregations endpoint: 33 denied (sum 22,485,000) and 407 originated (sum 257,175,000).",
+    "rows_retrieved": 400,
+    "known_gap_rows": 40,
+    "known_gap_loan_amount": 31060000,
+    "known_gap_definition": "action_taken=1, loan_purpose=1, derived_race=White, derived_sex=Joint, derived_loan_product_type=Conventional:First Lien.",
+    "known_gap_cause": "The Data Browser API rejects more than two non-geographic filters, and the smallest two-filter cell containing these records is 165 rows, which exceeds what the retrieval path returns intact. The cell was fetched and rejected rather than partially accepted.",
+    "known_gap_effect": "The shortfall is on the approved side only and is demographically clustered, so comparator density is reduced for a subset of the population. It cannot manufacture a finding: a missing approved record can only remove a comparator, never add one. It can suppress one."
+  },
+  "egress_note": "The national Snapshot file could not be downloaded directly: this container's egress policy refuses ffiec.cfpb.gov to the shell. Records were retrieved through the sanctioned web-fetch path in verified slices."
+}

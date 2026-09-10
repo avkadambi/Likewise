@@ -1,0 +1,41 @@
+{
+  "captured": "2026-09-15",
+  "filing_year": 2025,
+  "note": "The granularity values here are inferred from the published file, not read from the Filing Instructions Guide. Check them against the primary document before any result is relied on. The 2024 snapshot beside this one carries the same values checked against every record of a retrieved file, which is a narrower claim than reading the guide but a stronger one than asserting them.",
+  "publication_granularity": {
+    "combined_loan_to_value_ratio": {
+      "kind": "reported",
+      "unit": "percentage_points",
+      "width": 0.001
+    },
+    "debt_to_income_ratio": {
+      "integer_range": [
+        36,
+        49
+      ],
+      "kind": "bucketed",
+      "outside_range_width": 10.0,
+      "unit": "percentage_points",
+      "width": 1.0
+    },
+    "income": {
+      "kind": "rounded",
+      "unit": "usd",
+      "width": 1000
+    },
+    "loan_amount": {
+      "kind": "bin_midpoint",
+      "unit": "usd",
+      "width": 10000
+    },
+    "property_value": {
+      "kind": "bin_midpoint",
+      "unit": "usd",
+      "width": 10000
+    }
+  },
+  "snapshot_id": "ffiec_flg_2025_2026-09-15",
+  "source": "Regulation C publication rules as they present in the FFIEC 2025 public file.",
+  "source_status": "unverified_against_primary_document",
+  "verified": false
+}

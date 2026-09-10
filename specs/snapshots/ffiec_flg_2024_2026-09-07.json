@@ -1,0 +1,24 @@
+{
+  "snapshot_id": "ffiec_flg_2024_2026-09-07",
+  "filing_year": 2024,
+  "captured": "2026-09-07",
+  "source": "Regulation C publication rules as they present in the FFIEC 2024 public file. The Filing Instructions Guide itself has not been read from the primary document; however, every granularity claim below is now checked against a retrieved file rather than asserted.",
+  "verified": true,
+  "verification": {
+    "method": "Checked against all 400 records of the retrieved 2024 slice for LEI 549300MGPZBLQDIL7538, county 06073.",
+    "loan_amount": "loan_amount mod 10000 == 5000 for every record, with no exceptions. Bin midpoint at $10,000 confirmed.",
+    "property_value": "property_value mod 10000 == 5000 for every record. Bin midpoint at $10,000 confirmed.",
+    "income": "income mod 1000 == 0 for every record. Rounding to $1,000 confirmed. Note the public field is expressed in thousands and is scaled at ingest.",
+    "combined_loan_to_value_ratio": "Reported to three decimal places (e.g. 99.522, 67.755). Reported, not derived, confirmed.",
+    "debt_to_income_ratio": "Every numeric value falls in [36, 49] inclusive; all other records carry a band string that normalises to null. The integer region and the bucket width outside it are confirmed.",
+    "not_verified": "The 2024 slice contains no EGRRCPA partial-exemption records, so the 'Exempt' sentinel path is exercised only by the synthetic fixture and by unit tests, not by this file."
+  },
+  "publication_granularity": {
+    "loan_amount":                  {"kind": "bin_midpoint", "width": 10000,  "unit": "usd"},
+    "property_value":               {"kind": "bin_midpoint", "width": 10000,  "unit": "usd"},
+    "income":                       {"kind": "rounded",      "width": 1000,   "unit": "usd"},
+    "combined_loan_to_value_ratio": {"kind": "reported",     "width": 0.001,  "unit": "percentage_points"},
+    "debt_to_income_ratio":         {"kind": "bucketed",     "width": 1.0,    "unit": "percentage_points",
+                                     "integer_range": [36, 49], "outside_range_width": 10.0}
+  }
+}

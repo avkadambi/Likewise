@@ -1,0 +1,79 @@
+{
+  "_bin_widths": {
+    "income": 1000.0,
+    "loan_amount": 10000.0,
+    "property_value": 10000.0
+  },
+  "bin_snapshot": "ffiec_flg_2025_2026-09-15",
+  "dimensions": {
+    "combined_loan_to_value_ratio": {
+      "decisive_threshold": 7.1,
+      "decisive_threshold_basis": "A declared MINIMUM, not the applied value. The threshold that decides a pair is computed at that pair's own magnitudes, because the comparability floor for a ratio of two binned quantities is 100*max(0.05L, 20000)/V -- 7.0 percentage points at a $285,000 property and 16.0 at a $125,000 one. A single scalar certified at one reference point passes there and fails everywhere cheaper, in the direction that produces findings.",
+      "depends_on": [
+        "loan_amount",
+        "property_value"
+      ],
+      "derivation": null,
+      "granularity": 0.001,
+      "reported_half_width": 0.0005,
+      "reported_or_derived": "reported",
+      "source": "FIG 2025 field 25",
+      "source_status": "unverified_against_primary_document",
+      "unit": "percentage_points"
+    },
+    "debt_to_income_ratio": {
+      "bands": {
+        "20%-<30%": [
+          20,
+          30
+        ],
+        "30%-<36%": [
+          30,
+          36
+        ],
+        "50%-60%": [
+          50,
+          60
+        ],
+        "<20%": [
+          0,
+          20
+        ],
+        ">60%": [
+          60,
+          null
+        ]
+      },
+      "decisive_threshold": 1.0,
+      "decisive_threshold_basis": "One integer step. Debt-to-income is reported as an exact integer only between 36 and 49; outside that window the file carries a band. A band is an interval, not a missing value, so it is compared as one: the approved file is decisively worse only if its whole interval lies beyond the denied file's by more than this threshold. That is why '50%-60%' against '>60%' is not a finding -- the intervals touch at 60 and the true difference may be a hundredth of a point.",
+      "depends_on": [],
+      "derivation": null,
+      "granularity": 1.0,
+      "integer_range": [
+        36,
+        49
+      ],
+      "outside_range_width": 10.0,
+      "reported_half_width": 0.5,
+      "reported_or_derived": "reported",
+      "restricted_to_integer_range": true,
+      "source": "FIG 2025 field 24",
+      "source_status": "unverified_against_primary_document",
+      "unit": "percentage_points"
+    },
+    "property_value": {
+      "decisive_threshold": 10000.0,
+      "decisive_threshold_basis": "One publication bin width.",
+      "depends_on": [],
+      "derivation": null,
+      "granularity": 10000.0,
+      "reported_half_width": 5000.0,
+      "reported_or_derived": "reported",
+      "source": "FIG 2025 field 27",
+      "source_status": "unverified_against_primary_document",
+      "unit": "usd"
+    }
+  },
+  "note": "Resolution budget. reported_or_derived is DECLARED: if a dimension is derived its propagated granularity must be shown, and it will very likely close the band -- that is the gate working rather than failing. decisive_threshold is a declared MINIMUM; the value applied to a pair is computed at that pair's own magnitudes, because the comparability floor for a ratio of two binned quantities varies by more than a factor of two across the market. source_status records whether each entry has been checked against the FFIEC Filing Instructions Guide itself, rather than inferred from the published file.",
+  "version": "1.1.0"
+}

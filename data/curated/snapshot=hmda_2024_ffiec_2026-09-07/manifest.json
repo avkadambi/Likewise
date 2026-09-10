@@ -1,0 +1,88 @@
+{
+  "activity_year": 2024,
+  "completeness": {
+    "known_gap_cause": "The Data Browser API rejects more than two non-geographic filters, and the smallest two-filter cell containing these records is 165 rows, which exceeds what the retrieval path returns intact. The cell was fetched and rejected rather than partially accepted.",
+    "known_gap_definition": "action_taken=1, loan_purpose=1, derived_race=White, derived_sex=Joint, derived_loan_product_type=Conventional:First Lien.",
+    "known_gap_effect": "The shortfall is on the approved side only and is demographically clustered, so comparator density is reduced for a subset of the population. It cannot manufacture a finding: a missing approved record can only remove a comparator, never add one. It can suppress one.",
+    "known_gap_loan_amount": 31060000,
+    "known_gap_rows": 40,
+    "rows_retrieved": 400,
+    "universe_note": "All action_taken 1 and 3 records for this filer-county-year, per the aggregations endpoint: 33 denied (sum 22,485,000) and 407 originated (sum 257,175,000).",
+    "universe_rows": 440
+  },
+  "content_hash": "sha256:bbdd329d3e65eae54b057040484aea4e8d0fc315f3307c300a2fec244b152979",
+  "duplicates_dropped": 0,
+  "egress_note": "The national Snapshot file could not be downloaded directly: this container's egress policy refuses ffiec.cfpb.gov to the shell. Records were retrieved through the sanctioned web-fetch path in verified slices.",
+  "filer_lei_public": "549300MGPZBLQDIL7538",
+  "filer_name_public": "Fairway Independent Mortgage Corporation",
+  "filing_year": 2024,
+  "geography": "county 06073 (San Diego County, California)",
+  "granularity_conforming": true,
+  "granularity_report": {
+    "combined_loan_to_value_ratio": {
+      "conforming": 400,
+      "expected": "reported as filed; no coarsening to check",
+      "fraction": 1.0,
+      "kind": "reported",
+      "n": 400
+    },
+    "debt_to_income_ratio": {
+      "conforming": 240,
+      "expected": "integer within [36, 49]; anything else must arrive as a band",
+      "fraction": 1.0,
+      "kind": "bucketed",
+      "n": 240
+    },
+    "income": {
+      "conforming": 378,
+      "expected": "value mod 1000 == 0",
+      "fraction": 1.0,
+      "kind": "rounded",
+      "n": 378
+    },
+    "loan_amount": {
+      "conforming": 400,
+      "expected": "value mod 10000 == 5000",
+      "fraction": 1.0,
+      "kind": "bin_midpoint",
+      "n": 400
+    },
+    "property_value": {
+      "conforming": 400,
+      "expected": "value mod 10000 == 5000",
+      "fraction": 1.0,
+      "kind": "bin_midpoint",
+      "n": 400
+    }
+  },
+  "layout": "ffiec",
+  "lei": "549300MGPZBLQDIL7538",
+  "loaded_at": "2026-09-07T18:55:18",
+  "normalisation_causes": {
+    "na": 1381
+  },
+  "parquet": "data/curated/snapshot=hmda_2024_ffiec_2026-09-07/activity_year=2024/lei=549300MGPZBLQDIL7538/data.parquet",
+  "public_record": true,
+  "public_record_note": "Values conform to the publication granularity the resolution budget assumes.",
+  "retrieved": "2026-09-07",
+  "rows_written": 400,
+  "snapshot_id": "hmda_2024_ffiec_2026-09-07",
+  "source": "FFIEC HMDA Data Browser, loan-level CSV extract",
+  "source_endpoint": "https://ffiec.cfpb.gov/v2/data-browser-api/view/csv",
+  "source_files": [
+    {
+      "file": "denied.csv",
+      "layout": "ffiec"
+    },
+    {
+      "file": "originated_purchase.csv",
+      "layout": "ffiec"
+    },
+    {
+      "file": "originated_other.csv",
+      "layout": "ffiec"
+    }
+  ],
+  "verification_method": "Each partition's row count and loan_amount sum were checked against the FFIEC aggregations endpoint for the same filter set, and every row was required to carry exactly 99 fields. No partition that failed a check contributed a row.",
+  "verified": true
+}

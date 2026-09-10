@@ -1,0 +1,23 @@
+version: "1.0.0"
+fig_source: "FFIEC denial reason code list, 2025 filing year"
+source_status: "unverified_against_primary_document"
+verified: false
+codes:
+  1:
+    label: "Debt-to-income ratio"
+    testable: true
+    dimensions:
+      - {field: debt_to_income_ratio, direction: higher_is_worse}
+  2: {label: "Employment history", testable: false}
+  3: {label: "Credit history", testable: false}
+  4:
+    label: "Collateral"
+    testable: true
+    dimensions:
+      - {field: combined_loan_to_value_ratio, direction: higher_is_worse}
+      - {field: property_value, direction: higher_is_better}
+  5: {label: "Insufficient cash", testable: false}
+  6: {label: "Unverifiable information", testable: false}
+  7: {label: "Credit application incomplete", testable: false}
+  8: {label: "Mortgage insurance denied", testable: false}
+  9: {label: "Other", testable: false}

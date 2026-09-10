@@ -1,0 +1,49 @@
+version: "1.0.0"
+effective_date: "2026-09-09"
+author: "Arun Kadambi"
+
+# The extraction standard. Governed exactly as the materiality specification is governed:
+# signed, versioned, cited by digest on the snapshot it produced, and never fitted to
+# make a downstream result look better. A confidence floor is a policy about when the
+# system is allowed to speak. It is not a model hyperparameter and it does not belong in
+# a training script.
+
+backbone: caselaw-modernbert-large
+backbone_revision: main
+checkpoint: null            # set to the fine-tuned token-classification head
+
+# Fitted on held-out data from the SAME corpus, and only valid there. Encoder confidence
+# collapses under domain shift -- error-detection AUROC 0.922 in-domain against 0.633
+# out-of-domain in the one study that measures it on NER -- so a floor carried to a new
+# court or a new filing type is a floor that no longer means what it says.
+calibration:
+  corpus_id: null
+  temperature: 1.0
+  aggregation: min          # weakest link: a span is as identified as its worst token
+  target_precision: 0.98
+  fitted_n: 0
+
+# Per field, in (0, 1]. Zero is refused rather than clamped: it makes the abstention path
+# unreachable, and the abstention path is the only thing between a guess and a bind.
+floors: {}
+
+rationale: >
+  The backbone is named from a closed set because a specification cited by digest must
+  be comparable, and a digest over a free-form repository name certifies the string
+  rather than the weights.
+
+  caselaw-modernbert-large is ModernBERT-large continued-pretrained on 8.3M US court
+  opinions. It is the default as a prior, not a result: token classification has not been
+  measured on that checkpoint, and modernbert-large is kept in the set as the control arm
+  the domain gain must be demonstrated against on real labelled spans.
+
+  The 8192-token window is what buys ModernBERT its place over DeBERTaV3, which wins
+  token classification by about 1.4 F1 and extractive QA by 1.7 under matched pretraining
+  data. A filing does not fit in DeBERTaV3's 512 tokens, so the trade is accepted -- and
+  deberta-v3-large stays in the set as a chunked comparison arm so the trade stays
+  measurable rather than becoming an assumption.
+
+  target_precision is 0.98 and there is no recall target. The error asymmetry here is the
+  opposite of a normal extraction task: a missed field produces silence, and silence
+  abstains, while a hallucinated field produces a bind on a premise nobody established.
+  Fitting for F1 would trade the expensive error for the cheap one.

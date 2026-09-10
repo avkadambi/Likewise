@@ -1,0 +1,54 @@
+{
+  "_bin_widths": {
+    "income": 1000.0,
+    "loan_amount": 10000.0,
+    "property_value": 10000.0
+  },
+  "bin_snapshot": "ffiec_flg_2025_2026-09-15",
+  "dimensions": {
+    "combined_loan_to_value_ratio": {
+      "decisive_threshold": 7.1,
+      "decisive_threshold_basis": "Comparability floor at the gate reference (L=$270k, V=$285k): d(CLTV)/d(L)=3.51e-4 pp/$ times the loan_amount control slack of $20,000 = 7.02 pp. Irreducible floor from publication binning alone (matcher tolerance zero) is 2.42 pp RSS / 3.42 pp worst case, because loan_amount and property_value are both published at $10,000 bin midpoints and CLTV is their ratio. A sub-percentage-point CLTV margin is therefore not measurable on the public record at any tolerance. Threshold set above the floor.",
+      "depends_on": [
+        "loan_amount",
+        "property_value"
+      ],
+      "derivation": null,
+      "granularity": 0.001,
+      "reported_or_derived": "reported",
+      "source": "FIG 2025 field 25",
+      "source_status": "unverified_against_primary_document",
+      "unit": "percentage_points"
+    },
+    "debt_to_income_ratio": {
+      "decisive_threshold": 1.0,
+      "decisive_threshold_basis": "One integer step. DTI is published at 1pp only in 36-49; outside that range the published bucket is >=10pp wide, which cannot carry a materiality standard. The dimension is therefore RESTRICTED to the integer region: a pair with either value outside 36-49 returns below_resolution rather than being judged against a 10pp bucket.",
+      "depends_on": [],
+      "derivation": null,
+      "granularity": 1.0,
+      "integer_range": [
+        36,
+        49
+      ],
+      "outside_range_width": 10.0,
+      "reported_or_derived": "reported",
+      "restricted_to_integer_range": true,
+      "source": "FIG 2025 field 24",
+      "source_status": "unverified_against_primary_document",
+      "unit": "percentage_points"
+    },
+    "property_value": {
+      "decisive_threshold": 10000.0,
+      "decisive_threshold_basis": "One publication bin width.",
+      "depends_on": [],
+      "derivation": null,
+      "granularity": 10000.0,
+      "reported_or_derived": "reported",
+      "source": "FIG 2025 field 27",
+      "source_status": "unverified_against_primary_document",
+      "unit": "usd"
+    }
+  },
+  "note": "reported_or_derived is DECLARED. If a dimension is derived its propagated granularity must be shown and it will very likely close the band -- that is the gate working.",
+  "version": "1.0.0"
+}

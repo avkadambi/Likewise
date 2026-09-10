@@ -1,0 +1,11 @@
+# Extraction only. These are deliberately NOT in the top-level requirements.txt: the
+# served engine runs on five wheels totalling about 25 MB, and torch alone is 555 MB
+# before a checkpoint of 300 MB to 1.6 GB. Install these in a separate environment on a
+# machine with a GPU; the engine never imports them.
+#
+#   python3 -m venv .venv-extract
+#   .venv-extract/bin/pip install -r extract/requirements.txt
+torch>=2.4
+transformers>=4.48
+tokenizers>=0.21
+safetensors>=0.4
