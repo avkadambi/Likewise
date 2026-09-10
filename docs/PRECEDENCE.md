@@ -252,8 +252,8 @@ accountable*.
 > many recorded dispositions the change flips, in which direction, against the frozen oracle
 > corpus, plus the alternatives considered and rejected.
 
-"We chose 3.0" is not a rationale. "We chose 3.0; 2.0 flips 41 toward binding, 4.0 flips 12
-away" is.
+"The threshold is 3.0" is not a rationale. "The threshold is 3.0; at 2.0, 41 cases flip
+toward binding and at 4.0, 12 flip away" is.
 
 ## 8. Named open items
 

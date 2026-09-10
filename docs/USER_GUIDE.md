@@ -206,7 +206,7 @@ step.
 ```
 records in scope
   → denials in scope
-  → denials not partially exempt          (exempt filers omit the fields we need)
+  → denials not partially exempt          (exempt filers omit the fields the comparison needs)
   → denials with a complete record
   → denials with a matched comparator     (same cell, same key)
   → denials testable by their stated code

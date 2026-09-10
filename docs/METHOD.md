@@ -10,13 +10,13 @@ Companion documents: [USER_GUIDE.md](USER_GUIDE.md) for using the product,
 
 ## 1. The estimand — what is actually being measured
 
-Start with what we are *not* measuring, because it disciplines everything else.
+Start with what this method is *not* measuring, because it disciplines everything else.
 
-We are not estimating whether a lender discriminates. We are not estimating whether any
-individual denial was wrong. We are not fitting a model of the lender's underwriting and
-looking at residuals.
+It does not estimate whether a lender discriminates. It does not estimate whether any
+individual denial was wrong. It does not fit a model of the lender's underwriting and
+look at residuals.
 
-We are measuring one thing:
+It measures one thing:
 
 > Among a lender's denials, on how many does the **public record itself** fail to support
 > the reason the lender gave — in the sense that an application the same lender approved,
@@ -42,12 +42,12 @@ while passing every test written to enforce it.
 **Exchangeability is defined by the cell.** The whole inferential argument (§7) rests on
 being able to permute outcome labels *within* a group of genuinely interchangeable
 applications. If group membership is itself a function of a model fitted on the outcome,
-the null becomes conditional on an estimated object, and we are back to needing
+the null becomes conditional on an estimated object, and the design is back to needing
 unconfoundedness — the assumption this design exists to avoid.
 
 **The claim has to be checkable by the lender.** A lender must be able to reproduce or
-rebut a finding from the published specification and the public file. "Given our model" is
-not a claim anyone outside the vendor can check.
+rebut a finding from the published specification and the public file. "Given the vendor's
+model" is not a claim anyone outside the vendor can check.
 
 So comparability is **declarative**: a signed, versioned, digest-cited specification, never
 fitted, never tuned to make a result look better. A learned re-ranker was considered and

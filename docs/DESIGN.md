@@ -444,7 +444,7 @@ property, not a quality result.
 
 ## 12. Testing
 
-249 tests, plus a mutation gate and a lint gate.
+253 tests, plus a mutation gate and a lint gate.
 
 **The true-null fixture** is the validity test that was missing: labels assigned uniformly at
 random within cells must produce a p-value distribution indistinguishable from uniform,
