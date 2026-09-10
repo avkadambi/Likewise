@@ -283,7 +283,7 @@ class Spec:
 # A closed set rather than a user-supplied callable, deliberately. The specification is
 # a signed, digested governance artifact that a lender has to be able to reproduce and
 # rebut from the published file. An arbitrary function in a spec is neither reviewable
-# nor comparable across versions by digest, and it reintroduces the "given our model"
+# nor comparable across versions by digest, and it reintroduces the "given the vendor's model"
 # problem that keeping the standard declarative exists to avoid. Adding a model is a
 # code change with a review; choosing one is a specification change with a rationale.
 #
@@ -325,7 +325,7 @@ def comparability_floor(spec: Spec, dim: str, ref: dict[str, float]) -> tuple[fl
     """Uncertainty in `dim` induced by fields the matcher treats as equal-within-tolerance.
 
     A tested dimension algebraically downstream of a matched control field inherits that
-    field's permitted slack. If the slack exceeds the margin we call decisive, the
+    field's permitted slack. If the slack exceeds the margin called decisive, the
     "finding" is inside noise the matcher itself allows.
 
     Returns (floor, explanation).
@@ -352,7 +352,7 @@ def comparability_floor(spec: Spec, dim: str, ref: dict[str, float]) -> tuple[fl
 
 
 def _partial(dim: str, src: str, ref: dict[str, float]) -> float | None:
-    """Analytic partial derivative for the derivations we support."""
+    """Analytic partial derivative for the supported derivations."""
     if dim == "combined_loan_to_value_ratio":
         L, V = ref.get("loan_amount"), ref.get("property_value")
         if not L or not V:
@@ -588,7 +588,7 @@ def _startup_gate(spec: Spec, gate_reference: dict[str, float]) -> dict:
     check `granularity < |m| <= tolerance` no longer applies as written. What must still
     hold is the substantive condition it was standing in for:
 
-        the margin we are willing to call decisive must exceed the uncertainty
+        the margin called decisive must exceed the uncertainty
         propagated from the fields the matcher treats as equal.
 
     Otherwise a finding sits inside slack the matcher itself permits.

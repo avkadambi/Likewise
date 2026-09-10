@@ -34,7 +34,7 @@ so one bind is a demonstration that the floor does not hold, whatever the aggreg
 Two ideas, and only two.
 
 **The Clopper-Pearson exact binomial confidence limit.** Every bind is a Bernoulli
-trial: it was either right or it was a false bind. From k failures in n trials we want
+trial: it was either right or it was a false bind. From k failures in n trials the gate wants
 an upper bound on the underlying failure rate that is honest at small k -- and k is
 usually zero, which is exactly where the normal approximation is worst (it returns an
 interval of width zero). Clopper-Pearson inverts the binomial test instead: the upper

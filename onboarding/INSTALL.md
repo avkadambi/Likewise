@@ -24,7 +24,7 @@ sudo apt-get install -y python3 python3-venv    # Debian, Ubuntu
 ```
 
 Python 3.9 will not work. The web routes use `str | None` in their annotations and FastAPI
-evaluates those at import time, so 3.9 fails before the first line of our code runs.
+evaluates those at import time, so 3.9 fails before the first line of this code runs.
 
 ---
 

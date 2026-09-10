@@ -20,13 +20,13 @@ from ..layout import corners, page, tripwire_chip
 # ---------------------------------------------------------------------------
 # Written out in full, next to the breach, rather than left as a metric name. A tripwire
 # fires on a number nobody outside the project can interpret; the sentence is what makes
-# it actionable, and where the likeliest explanation is our own error it says so.
+# it actionable, and where the likeliest explanation is an error in this software it says so.
 TRIPWIRE_MEANING = {
     "matched_fraction": ("Tolerances may be too loose for the pairs to be comparable, or too "
                          "tight for any pair to survive. Investigate before citing any finding "
                          "from this scan."),
     "not_supported_rate": ("The defeated share is outside the band the specification says is "
-                           "plausible. A high rate is more likely our error than a lender's "
+                           "plausible. A high rate is more likely an error here than a lender's "
                            "misconduct; a rate of zero usually means the test never fired."),
     "median_margin_ratio": ("Margins are close to the publication floor, so the findings are "
                             "being decided by rounding rather than by lending."),
@@ -216,7 +216,7 @@ def coverage_page(sid: str, rec: dict, summary: dict, controls: dict | None,
       {''.join(tw)}
       <div class="mono muted" style="font-size:10.5px;line-height:1.6;
            border-top:1px solid var(--color-divider);padding-top:11px">
-        A high defeated rate is more likely our error than a lender's misconduct. Any headline
+        A high defeated rate is more likely an error here than a lender's misconduct. Any headline
         above its tripwire is re-derived and independently replayed before it appears in any
         deliverable.</div>
     </div>

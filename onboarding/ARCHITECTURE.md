@@ -254,7 +254,7 @@ go through the versioning process, not a code edit.
 
 ## 11. Testing architecture
 
-249 tests plus a mutation gate and a lint gate.
+253 tests plus a mutation gate and a lint gate.
 
 | Kind | What it catches |
 | :--- | :--- |

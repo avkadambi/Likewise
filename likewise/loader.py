@@ -85,6 +85,41 @@ FFIEC_MAP = {
     "denial_reason_3": "denial_reason-3", "denial_reason_4": "denial_reason-4",
 }
 
+# internal field -> source column, for the Snapshot National Loan Level Dataset. Same
+# regulator, same semantics, same publication coarsening, different punctuation: the
+# Snapshot spells with underscores where the Data Browser spells with hyphens, and names
+# the ratio in full. Income is in THOUSANDS in both.
+#
+# It is a separate map rather than a normalisation pass over the header because the two
+# products are not the same file. The Snapshot carries census tract and the full
+# demographic block, which the Modified LAR omits; a rule that rewrote punctuation would
+# make the two look interchangeable when only one of them is safe to publish geography
+# from.
+SNAPSHOT_MAP = {**FFIEC_MAP,
+                "aus_1": "aus_1",
+                "open_end_line_of_credit": "open_end_line_of_credit",
+                "combined_loan_to_value_ratio": "combined_loan_to_value_ratio",
+                "denial_reason_1": "denial_reason_1",
+                "denial_reason_2": "denial_reason_2",
+                "denial_reason_3": "denial_reason_3",
+                "denial_reason_4": "denial_reason_4"}
+
+# The column each layout derives co-applicant presence from. Differs by one hyphen, and
+# getting it wrong makes every record look like it has a co-applicant.
+CO_APPLICANT_COLUMN = {"ffiec": "co-applicant_credit_score_type",
+                       "snapshot": "co_applicant_credit_score_type"}
+
+# Source columns a layout needs that are not in its map, because the field they feed is
+# derived rather than renamed.
+LAYOUT_DERIVED_SOURCES = {
+    "ffiec": ("income", "other_nonamortizing_features", CO_APPLICANT_COLUMN["ffiec"]),
+    "snapshot": ("income", "other_nonamortizing_features", CO_APPLICANT_COLUMN["snapshot"]),
+    "template": (),
+}
+
+# The two regulator layouts share every derivation; only their spelling differs.
+FFIEC_LIKE = ("ffiec", "snapshot")
+
 REASON_FIELDS = ("denial_reason_1", "denial_reason_2", "denial_reason_3", "denial_reason_4")
 DOUBLE_FIELDS = ("loan_amount", "income", "property_value",
                  "combined_loan_to_value_ratio", "debt_to_income_ratio")
@@ -126,26 +161,85 @@ DOMAINS = {
 # --------------------------------------------------------------------------
 # layout
 # --------------------------------------------------------------------------
-def detect_layout(header: list[str]) -> str:
-    """Which of the two accepted layouts this header is, or a refusal.
+def layout_maps() -> dict[str, dict]:
+    """Every accepted layout, as internal field -> source column."""
+    return {"ffiec": FFIEC_MAP, "snapshot": SNAPSHOT_MAP,
+            "template": {c: c for c in TEMPLATE_COLUMNS}}
 
-    Detection is by marker column, not by column count or order, so a file with extra
-    columns still loads. There is no third branch and no guess: a header matching
-    neither marker is refused with both markers quoted, because the alternative --
-    assuming the template and reading the wrong columns -- produces a snapshot that
-    loads cleanly and means something else entirely.
+
+def required_sources(layout: str) -> set[str]:
+    """The source columns a layout cannot be read without.
+
+    The three optional denial reasons are excluded: a filing where no record cites a
+    second reason legitimately omits the column. Everything else is required, which is
+    the point of the check below -- a layout is only claimed when the WHOLE of it is
+    present.
     """
-    h = set(header)
-    if "loan_to_value_ratio" in h and "denial_reason-1" in h:
-        return "ffiec"
-    if "combined_loan_to_value_ratio" in h:
-        return "template"
+    optional = {"denial_reason_2", "denial_reason_3", "denial_reason_4"}
+    m = layout_maps()[layout]
+    return ({src for field, src in m.items() if field not in optional}
+            | set(LAYOUT_DERIVED_SOURCES[layout]))
+
+
+def score_layouts(header: list[str]) -> dict[str, tuple[float, list[str]]]:
+    """How completely each layout is satisfied by this header, and what it is missing."""
+    h = {c.strip() for c in header}
+    out = {}
+    for layout in layout_maps():
+        need = required_sources(layout)
+        missing = sorted(need - h)
+        out[layout] = ((len(need) - len(missing)) / len(need), missing)
+    return out
+
+
+def detect_layout(header: list[str]) -> str:
+    """Which accepted layout this header is, or a refusal.
+
+    Scored against each layout's FULL required column set, not against a marker column.
+    A layout is claimed only when every column it needs is present, and two complete
+    matches are an ambiguity that refuses rather than a tie broken by declaration order.
+
+    The marker approach this replaced had a real hole, and it is worth recording because
+    it failed in the most dangerous direction available. The Snapshot National Loan Level
+    Dataset names its ratio `combined_loan_to_value_ratio` -- which was the TEMPLATE
+    marker -- while publishing income in thousands, as the Data Browser does. A Snapshot
+    file therefore matched the template branch, and the template branch does not scale
+    income. Every income would have come out a thousand times too small, the blocking
+    band on income would have matched almost everything, and nothing about the load would
+    have looked wrong. It happened to fail safe only because the Snapshot lacks the
+    derived `amortization` and `has_co_applicant` columns and the required-column check
+    downstream refused it. That is luck, not design, and luck is not a detector.
+    """
+    scored = score_layouts(header)
+    complete = sorted(k for k, (frac, _) in scored.items() if frac == 1.0)
+    if len(complete) == 1:
+        return complete[0]
+    if len(complete) > 1:
+        raise SpecError("ambiguous_csv_layout", [{
+            "problem": "the header satisfies more than one layout completely",
+            "layouts_matched": complete,
+            "remedy": "Export the file unchanged from one source. A header assembled "
+                      "from two products cannot be read as either, because the two "
+                      "disagree on the unit of `income`."}])
+    # The drop folder is operator-facing and the template is the operator's path, so a
+    # header that is unambiguously a template with something missing gets the specific
+    # refusal naming the missing columns rather than a three-layout score table. This
+    # chooses a MESSAGE, never a reading: the file is refused either way.
+    t_missing = set(scored["template"][1])
+    if all(t_missing < set(m) for k, (_, m) in scored.items() if k != "template"):
+        raise SpecError("template_missing_required_columns", [{
+            "missing": sorted(t_missing),
+            "remedy": "Start from docs/templates/likewise_lar_template.csv; the "
+                      "column names and their order are the contract."}])
+
+    best = sorted(scored.items(), key=lambda kv: -kv[1][0])
     raise SpecError("unrecognised_csv_layout", [{
-        "problem": "the header matches neither accepted layout",
-        "expected_ffiec_marker": "loan_to_value_ratio + denial_reason-1",
-        "expected_template_marker": "combined_loan_to_value_ratio",
+        "problem": "the header satisfies no accepted layout completely",
+        "layouts": {k: {"fraction_present": round(f, 4), "missing": m[:8]}
+                    for k, (f, m) in best},
         "header_seen": header[:12] + (["..."] if len(header) > 12 else []),
-        "remedy": "Export from the FFIEC Data Browser unchanged, or start from "
+        "remedy": "Export from the FFIEC Data Browser or the Snapshot National Loan "
+                  "Level Dataset unchanged, or start from "
                   "docs/templates/likewise_lar_template.csv"}])
 
 
@@ -165,13 +259,14 @@ def read_header(path: str) -> list[str]:
 # --------------------------------------------------------------------------
 # the reference conversion, in plain Python
 # --------------------------------------------------------------------------
-def _convert_ffiec(raw: dict, causes: dict) -> dict:
-    # Three fields are not a straight rename and are handled after the mapping loop:
-    # income arrives in thousands, amortization is derived from a differently named
+def _convert_ffiec(raw: dict, causes: dict, layout: str = "ffiec") -> dict:
+    # Both regulator layouts, since they differ only in how the source columns are
+    # spelled. Three fields are not a straight rename and are handled after the mapping
+    # loop: income arrives in thousands, amortization is derived from a differently named
     # source column, and co-applicant presence is derived from a credit-score-type
     # sentinel rather than published as a flag.
     out = {}
-    for field, src in FFIEC_MAP.items():
+    for field, src in layout_maps()[layout].items():
         v, cause = normalise_value(field, raw.get(src))
         if cause:
             causes[cause] = causes.get(cause, 0) + 1
@@ -185,7 +280,7 @@ def _convert_ffiec(raw: dict, causes: dict) -> dict:
     out["income"] = None if inc is None else float(inc) * INCOME_UNIT_THOUSANDS
     amort, _ = normalise_value("amortization", raw.get("other_nonamortizing_features"))
     out["amortization"] = None if amort is None else int(amort)
-    co = (raw.get("co-applicant_credit_score_type") or "").strip()
+    co = (raw.get(CO_APPLICANT_COLUMN[layout]) or "").strip()
     out["has_co_applicant"] = 0 if co == NO_CO_APPLICANT else 1
     return out
 
@@ -210,7 +305,8 @@ def record_key(raw: dict) -> str:
 def convert(raw: dict, layout: str, causes: dict) -> dict:
     """Reference implementation. Production runs the SQL in `projection()`; a differential
     test asserts the two agree record for record."""
-    out = _convert_ffiec(raw, causes) if layout == "ffiec" else _convert_template(raw, causes)
+    out = (_convert_ffiec(raw, causes, layout) if layout in FFIEC_LIKE
+           else _convert_template(raw, causes))
     # Denial reason 10 is "not applicable" -- an absence written as a code. Nulling it is
     # what puts such a denial in the excluded count the scan reports rather than in the
     # population it tests; kept as 10 it would be a reason code like any other.
@@ -285,9 +381,10 @@ def cause_columns(layout: str, header: list[str]) -> str:
     which is why this walks the same field/source pairs the reference conversion does
     rather than the source columns alone.
     """
-    if layout == "ffiec":
-        pairs = list(FFIEC_MAP.items()) + [("income", "income"),
-                                           ("amortization", "other_nonamortizing_features")]
+    if layout in FFIEC_LIKE:
+        pairs = list(layout_maps()[layout].items()) + [
+            ("income", "income"),
+            ("amortization", "other_nonamortizing_features")]
     else:
         pairs = [(c, c) for c in TEMPLATE_COLUMNS]
     pairs = [(f, c) for f, c in pairs if c in header]
@@ -318,7 +415,7 @@ def cause_columns(layout: str, header: list[str]) -> str:
 
 def projection(layout: str, header: list[str]) -> str:
     """The SELECT list that turns source columns into the internal schema."""
-    src = FFIEC_MAP if layout == "ffiec" else {c: c for c in TEMPLATE_COLUMNS}
+    src = layout_maps()[layout]
     parts = []
     digest = " || chr(31) || ".join(
         f"{_lit(k + '=')} || coalesce({_q(k)}, '')" for k in sorted(header))
@@ -327,12 +424,12 @@ def projection(layout: str, header: list[str]) -> str:
     for field in COLUMNS:
         if field == "record_key":
             continue
-        if layout == "ffiec" and field == "income":
+        if layout in FFIEC_LIKE and field == "income":
             e = f"({_num('income', 'income')}) * {INCOME_UNIT_THOUSANDS}"
-        elif layout == "ffiec" and field == "amortization":
+        elif layout in FFIEC_LIKE and field == "amortization":
             e = _num("other_nonamortizing_features", "amortization")
-        elif layout == "ffiec" and field == "has_co_applicant":
-            e = (f"CASE WHEN trim(coalesce({_q('co-applicant_credit_score_type')}, '')) = "
+        elif layout in FFIEC_LIKE and field == "has_co_applicant":
+            e = (f"CASE WHEN trim(coalesce({_q(CO_APPLICANT_COLUMN[layout])}, '')) = "
                  f"{_lit(NO_CO_APPLICANT)} THEN 0 ELSE 1 END")
         elif field == "county_code":
             e = f"lpad({_nz(src[field])}, 5, '0')"

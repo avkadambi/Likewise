@@ -220,11 +220,11 @@ Every headline carries a tripwire that triggers investigation rather than accept
 | Cited-over-placebo ratio | Below 2.0 |
 | Pooled scan-level statistic | z above 3.0 — the claim being raised. Re-derive before anything reaches a customer |
 
-**Tripwires are two-sided by default.** A surprisingly large result is more likely to be our
-defect than a lender's misconduct, and the characteristic failure of this design produces
+**Tripwires are two-sided by default.** A surprisingly large result is more likely to be a
+defect in this software than a lender's misconduct, and the characteristic failure of this design produces
 zero — so a suspiciously clean result gets the same treatment. The scan-level statistic is the
 one deliberate exception, banded above only: |z| scales with the square root of the cell
-count, so a lower bound could only be read off whatever scan happened to be in front of us.
+count, so a lower bound could only be read off whatever scan happened to be at hand.
 
 ## 13. Compliance constraints
 

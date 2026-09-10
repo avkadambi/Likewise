@@ -50,7 +50,7 @@ servable without a sensitivity sweep. Roughly a dozen gates exist and each one i
 because something got past its absence.
 
 **Scepticism runs in both directions.** A surprisingly *large* result is more likely to be
-our defect than a lender's misconduct. So is a surprisingly clean one — the characteristic
+a defect in this software than a lender's misconduct. So is a surprisingly clean one — the characteristic
 failure of this design produces zero. Both trip the same investigation.
 
 **Under a rule of precedence the error asymmetry inverts.** A false flag costs a reviewer
@@ -70,7 +70,7 @@ form a view about the product.
 likewise/       the engine and the web view
 specs/          the comparability standard, versioned
 tools/          command-line entry points
-tests/          249 tests, plus a mutation catalogue
+tests/          253 tests, plus a mutation catalogue
 docs/           the maintained reference set this folder is drawn from
 ```
 

@@ -52,19 +52,19 @@ to be" threshold for **every single pair**, rather than using one number.
 
 **The file does not contain what actually decides a mortgage.** No credit score, no
 reserves, no employment history, no appraisal narrative. Two applications that look
-identical to us can be obviously different to an underwriter. This is why no individual
-result is ever presented as a conclusion, and why we report a number (§8) that says exactly
-how much hidden difference it would take to explain a result away.
+identical to this engine can be obviously different to an underwriter. This is why no
+individual result is ever presented as a conclusion, and why the engine reports a number
+(§8) saying exactly how much hidden difference it would take to explain a result away.
 
 **Comparing things is trickier than it looks.** If you say "compare this denial to every
 approval within 10% of its income", you have built a group *around that one record*. The
 approvals in it may not be within 10% of each other. That sounds pedantic and it is not —
 the entire statistical argument depends on the records in a group being interchangeable,
-and in a group built around one of them they are not. We build groups a different way (§3).
+and in a group built around one of them they are not. Groups are built a different way (§3).
 
-**We only see the lender's own file.** We are not comparing them to the market. We are
-checking whether their filing is consistent *with itself*. That is a narrower claim and it
-is deliberate: it needs no assumption about anything we cannot see.
+**Only the lender's own file is in view.** The comparison is not against the market. It
+asks whether the filing is consistent *with itself*. That is a narrower claim and it is
+deliberate: it needs no assumption about anything the file does not carry.
 
 ## 3. How it works, in order
 
@@ -73,9 +73,10 @@ same county, same loan purpose, same occupancy, same lien position, and similar 
 loan size. Group membership never depends on which record you started from.
 
 **Comparing.** Within a group, take each denial and compare it against the approvals on the
-dimension the lender's own stated reason names. Because published values are blurred, we
-compare *ranges* rather than points. If the ranges overlap, the honest answer is "the public
-record does not tell us which is worse", and that is a real answer, not a missing one.
+dimension the lender's own stated reason names. Because published values are blurred, the
+comparison is between *ranges* rather than points. If the ranges overlap, the honest answer
+is "the public record does not say which is worse", and that is a real answer, not a
+missing one.
 
 **Deciding.** A denial is flagged only if some approval is clearly worse on the cited
 reason — clearly meaning by more than that pair's own threshold — and no approval is better
@@ -125,8 +126,8 @@ supported:
 
 The second does not follow, and §8 explains why with a number: the regulator's rounding
 destroys the resolution needed to see it. You would get this same result from a scrupulous
-lender and a careless one alike. Absence of evidence, and we can say precisely why the
-evidence would be absent either way.
+lender and a careless one alike. Absence of evidence, and the engine can say precisely why
+the evidence would be absent either way.
 
 That distinction is the single most important thing to understand about this product.
 
@@ -136,8 +137,8 @@ That distinction is the single most important thing to understand about this pro
 
 ## 6. The estimand
 
-We are not estimating whether a lender discriminates, nor whether any individual denial was
-wrong, nor fitting a model of underwriting and reading residuals. We measure:
+This is not an estimate of whether a lender discriminates, nor of whether any individual
+denial was wrong, nor a model of underwriting read through its residuals. What is measured:
 
 > Among a lender's denials, on how many does the public record itself fail to support the
 > stated reason — in the sense that an application the same lender approved, matched on
@@ -161,12 +162,12 @@ every test written to enforce it.
 **Exchangeability is defined by the cell.** The inferential argument (§11) rests on
 permuting outcome labels within a group of interchangeable applications. If group membership
 is a function of a model fitted on the outcome, the null becomes conditional on an estimated
-object, and we are back to needing unconfoundedness — the assumption this design exists to
+object, and the design is back to needing unconfoundedness — the assumption it exists to
 avoid.
 
 **The claim must be checkable by the lender.** They must be able to reproduce or rebut a
-result from the published specification and the public file. "Given our model" is not
-checkable by anyone outside the vendor.
+result from the published specification and the public file. "Given the vendor's model" is
+not checkable by anyone outside the vendor.
 
 Comparability is therefore **declarative**: a signed, versioned, digest-cited specification,
 never fitted. A learned re-ranker was considered and rejected outright rather than deferred —

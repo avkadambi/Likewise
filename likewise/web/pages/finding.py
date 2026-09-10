@@ -107,7 +107,7 @@ def _null_words(summary: dict) -> str:
         return ("The permutation null was not computed for this scan — no matched cell "
                 "reached the power floor, so there is nothing to compare a rate against.")
     side = "below" if n.get("direction") == "below_null" else "above"
-    return ("We reshuffled the outcomes inside each matched group " + str(n.get("B"))
+    return ("The outcomes inside each matched group were reshuffled " + str(n.get("B"))
             + " times. Across this scan the reshuffled data produced findings at a rate of "
             + str(n.get("null_mean")) + ", against " + str(n.get("observed"))
             + " observed — " + side + " the null.")
