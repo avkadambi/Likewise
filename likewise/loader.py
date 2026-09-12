@@ -832,14 +832,20 @@ def load(paths: list[str], snapshot: dict, snapshot_id: str,
     are only known after the file has been read, so the conversion writes to a scratch
     path first and the result is moved into place once the snapshot identity is settled.
     """
+    # The scratch file is created under out_root rather than the system temp directory
+    # so the final os.replace() is a rename within one filesystem. out_root and the
+    # container's /tmp are separate mounts (a read-only root with a tmpfs /tmp and a
+    # bind-mounted /data), and rename(2) cannot cross devices.
+    #
     # mkstemp then unlink: what is wanted is a name no other process will take, not a
     # file -- the COPY below creates the Parquet itself.
-    fd, tmp = tempfile.mkstemp(suffix=".parquet")
+    scratch_dir = out_root or _paths.curated_root()
+    os.makedirs(scratch_dir, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(suffix=".parquet", dir=scratch_dir)
     os.close(fd)
     os.unlink(tmp)
     # The finally clause is the reason for the try: a refused load must not leave a
-    # scratch Parquet in the system temp directory, and the refusals above raise from
-    # inside load_to_parquet.
+    # scratch Parquet behind, and the refusals above raise from inside load_to_parquet.
     try:
         rep = load_to_parquet(paths, snapshot, tmp, allow_nonconforming, header_file)
         dest = parquet_path(snapshot_id, rep["lei"], rep["activity_year"], out_root)

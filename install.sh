@@ -163,11 +163,14 @@ if [ "$MODE" = "container" ]; then
       echo "ARG BASE"
       echo 'FROM ${BASE}'
       echo "USER root"
-      echo "COPY requirements-dev.txt /tmp/requirements-dev.txt"
+      echo "COPY requirements.txt requirements-dev.txt /tmp/"
       echo "RUN pip install --no-cache-dir -r /tmp/requirements-dev.txt"
+      echo "COPY requirements.txt /app/requirements.txt"
+      echo "COPY extract/ /app/extract/"
       echo "COPY tests/ /app/tests/"
       echo "COPY pytest.ini /app/pytest.ini"
       echo "COPY data/examples/ /app/data/examples/"
+      echo "COPY data/raw/ /app/data/raw/"
       echo "USER 10001:10001"
     } > "$tmpdir/Containerfile.test"
     podman build -q --build-arg "BASE=$IMAGE" -t localhost/likewise-test:latest \
